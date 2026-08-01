@@ -1,42 +1,31 @@
-from textSummarizer.config.configuration import ConfigurationManager
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+import requests
 
 
 class PredictionPipeline:
 
   def __init__(self):
-    self.config = ConfigurationManager().get_model_evaluation_config()
+    # Dùng Hugging Face Inference API cho model PEGASUS
+    self.api_url = (
+        "https://api-inference.huggingface.co/models/google/pegasus-xsum"
+    )
 
   def predict(self, text):
-    # Dùng model chuẩn từ Hugging Face Hub
-    model_name = "google/pegasus-cnn_dailymail"
+    payload = {
+        "inputs": text,
+        "parameters": {
+            "max_length": 128,
+            "min_length": 30,
+            "do_sample": False,
+        },
+    }
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+    response = requests.post(self.api_url, json=payload)
 
-    # 1. Tokenize
-    inputs = tokenizer(
-        text,
-        max_length=1024,
-        truncation=True,
-        padding="max_length",
-        return_tensors="pt",
-    )
-
-    # 2. Sinh bản tóm tắt
-    summary_ids = model.generate(
-        input_ids=inputs["input_ids"],
-        attention_mask=inputs["attention_mask"],
-        length_penalty=0.8,
-        num_beams=8,
-        max_length=128,
-    )
-
-    # 3. Decode
-    output = tokenizer.decode(
-        summary_ids[0],
-        skip_special_tokens=True,
-        clean_up_tokenization_spaces=True,
-    )
-
-    return output
+    if response.status_code == 200:
+      result = response.json()
+      if isinstance(result, list) and len(result) > 0:
+        return result[0].get("summary_text", "")
+      return str(result)
+    else:
+      # Trường hợp model đang khởi động ở phía server Hugging Face
+      return f"API Error ({response.status_code}): Vui lòng thử lại sau vài giây."
