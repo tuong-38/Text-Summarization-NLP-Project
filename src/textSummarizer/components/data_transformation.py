@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 from textSummarizer.logging import logger
 from transformers import AutoTokenizer
@@ -23,4 +24,12 @@ class DataTransformation:
     def convert(self):
         dataset_samsum = load_from_disk(self.config.data_path)
         dataset_samsum_pt = dataset_samsum.map(self.convert_examples_to_features, batched=True)
-        dataset_samsum_pt.save_to_disk(os.path.join(self.config.root_dir, "samsum_dataset"))
+        
+        # Tạo đường dẫn tuyệt đối chuẩn hóa cho Windows
+        output_dir = Path(self.config.root_dir).resolve() / "samsum_dataset"
+        
+        # Đảm bảo thư mục tồn tại
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Lưu xuống đĩa bằng đường dẫn dạng chuỗi đã chuẩn hóa
+        dataset_samsum_pt.save_to_disk(str(output_dir))

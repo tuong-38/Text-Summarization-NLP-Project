@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Project specific ignores
+.venv/
+artifacts/
+huggingface_cache/
+D:/pip_temp/
+research/
+logs/
+.env
