@@ -8,13 +8,13 @@ class PredictionPipeline:
     self.config = ConfigurationManager().get_model_evaluation_config()
 
   def predict(self, text):
-    # Dùng model/tokenizer từ Hugging Face Hub thay vì đọc folder local artifacts
-    model_name = "google/pegasus-samsum"
+    # Dùng model chuẩn từ Hugging Face Hub
+    model_name = "google/pegasus-cnn_dailymail"
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
-    # 1. Tokenize văn bản
+    # 1. Tokenize
     inputs = tokenizer(
         text,
         max_length=1024,
@@ -32,7 +32,7 @@ class PredictionPipeline:
         max_length=128,
     )
 
-    # 3. Decode kết quả
+    # 3. Decode
     output = tokenizer.decode(
         summary_ids[0],
         skip_special_tokens=True,
