@@ -146,4 +146,9 @@ async def predict_route(data: ClientInput):
         raise e
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8080)
+  import os
+
+  # Render sẽ tự động cấp cổng thông qua biến môi trường PORT, nếu không có sẽ dùng 8080
+  port = int(os.environ.get("PORT", 8080))
+  # Bắt buộc host phải là "0.0.0.0" để Render kết nối được vào Container
+  uvicorn.run(app, host="0.0.0.0", port=port)
